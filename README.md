@@ -9,7 +9,7 @@
 </p>
 
 ------
-**OpenAI PHP** is a community-maintained PHP API client that allows you to interact with the [Open AI API](https://beta.openai.com/docs/api-reference/introduction). If you or your business relies on this package, it's important to support the developers who have contributed their time and effort to create and maintain this valuable tool:
+**OpenAI PHP** is a community-maintained PHP API client that allows you to interact with the [Open AI API](https://platform.openai.com/docs/api-reference/introduction). If you or your business relies on this package, it's important to support the developers who have contributed their time and effort to create and maintain this valuable tool:
 
 - Nuno Maduro: **[github.com/sponsors/nunomaduro](https://github.com/sponsors/nunomaduro)**
 - Sandro Gehri: **[github.com/sponsors/gehrisandro](https://github.com/sponsors/gehrisandro)**
@@ -231,6 +231,55 @@ $response->usage->completionTokens; // 12,
 $response->usage->totalTokens; // 21
 
 $response->toArray(); // ['id' => 'chatcmpl-6pMyfj1HF4QXnfvjtfzvufZSQq6Eq', ...]
+```
+
+Creates a completion for the chat message with a function call.
+
+```php
+$response = $client->chat()->create([
+    'model' => 'gpt-3.5-turbo-0613',
+    'messages' => [
+        ['role' => 'user', 'content' => 'What\'s the weather like in Boston?'],
+    ],
+    'functions' => [
+        [
+            'name' => 'get_current_weather',
+            'description' => 'Get the current weather in a given location',
+            'parameters' => [
+                'type' => 'object',
+                'properties' => [
+                    'location' => [
+                        'type' => 'string',
+                        'description' => 'The city and state, e.g. San Francisco, CA',
+                    ],
+                    'unit' => [
+                        'type' => 'string',
+                        'enum' => ['celsius', 'fahrenheit']
+                    ],
+                ],
+                'required' => ['location'],
+            ],
+        ]
+    ]
+]);
+
+$response->id; // 'chatcmpl-6pMyfj1HF4QXnfvjtfzvufZSQq6Eq'
+$response->object; // 'chat.completion'
+$response->created; // 1677701073
+$response->model; // 'gpt-3.5-turbo-0613'
+
+foreach ($response->choices as $result) {
+    $result->index; // 0
+    $result->message->role; // 'assistant'
+    $result->message->content; // null
+    $result->message->functionCall->name; // 'get_current_weather'
+    $result->message->functionCall->arguments; // "{\n  \"location\": \"Boston, MA\"\n}"
+    $result->finishReason; // 'function_call'
+}
+
+$response->usage->promptTokens; // 82,
+$response->usage->completionTokens; // 18,
+$response->usage->totalTokens; // 100
 ```
 
 #### `created streamed`

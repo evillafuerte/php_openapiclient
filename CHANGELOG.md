@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v0.6.3 (2023-07-07)
+### Fixed
+- Breaking change on OpenAI API regarding "transient" field in Audio ([#160](https://github.com/openai-php/client/pull/160))
+
+## v0.6.2 (2023-06-23)
+### Changed
+- Error handling: use error code as exception message if error message is empty ([#150](https://github.com/openai-php/client/pull/150))
+
+### Fixed
+- Error handling: Catch error in stream responses ([#150](https://github.com/openai-php/client/pull/150))
+- Error handling: Handle errors where message is an array ([#150](https://github.com/openai-php/client/pull/150))
+
+## v0.6.1 (2023-06-15)
+### Fixed
+- Chat/CreateResponse faking with function_call ([#145](https://github.com/openai-php/client/issues/145))
+
+## v0.6.0 (2023-06-14)
+### Added
+- Add support for function calling in the Chat Completions API ([#144](https://github.com/openai-php/client/issues/144))
+
+## v0.5.3 (2023-06-07)
+### Fixed
+- Exception handling for server error with non default content type header ([#134](https://github.com/openai-php/client/issues/134))
+- Faking embedding responses for multidimensional vectors ([#131](https://github.com/openai-php/client/issues/131))
+
+## v0.5.2 (2023-05-27)
+### Added
+- Add support for psr/http-message ^2.0 ([#130](https://github.com/openai-php/client/issues/130))
+
+## v0.5.1 (2023-05-24)
+### Fixed
+- fix: stream broken after checking for errors (regression of [#113](https://github.com/openai-php/client/pull/113))
+
+## v0.5.0 (2023-05-24)
+### Added
+- Support for HTTP base uri ([#106](https://github.com/openai-php/client/pull/106))
+
+### Changed
+- unify exception handling between HTTP client implementations ([#113](https://github.com/openai-php/client/pull/113))
+
+### Fixed
+- fix toArray() on `CreateStreamedResponseDelta` to match the original API response  ([#108](https://github.com/openai-php/client/pull/108))
+
+### Docs
+- explain usage for "OpenAI on Azure" ([#109](https://github.com/openai-php/client/pull/109))
+
 ## v0.4.2 (2023-04-12)
 ### Added
 - Testing support ([#71](https://github.com/openai-php/client/pull/71))
@@ -58,7 +104,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## v0.2.0 (2022-11-07)
 ### Added
-- Add `images()` resource to interact with [DALL-E](https://beta.openai.com/docs/api-reference/images)
+- Add `images()` resource to interact with [DALL-E](https://platform.openai.com/docs/api-reference/images)
 
 ### Fixed
 - Parse completions create response with logprobs correctly
