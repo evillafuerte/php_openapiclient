@@ -29,6 +29,7 @@ test('resources')->expect('OpenAI\Resources')->toOnlyUse([
 ]);
 
 test('responses')->expect('OpenAI\Responses')->toOnlyUse([
+    'Http\Discovery\Psr17Factory',
     'OpenAI\Enums',
     'OpenAI\Exceptions\ErrorException',
     'OpenAI\Contracts',
@@ -44,6 +45,7 @@ test('value objects')->expect('OpenAI\ValueObjects')->toOnlyUse([
     'Psr\Http\Message\StreamInterface',
     'OpenAI\Enums',
     'OpenAI\Contracts',
+    'OpenAI\Responses\Meta\MetaInformation',
 ]);
 
 test('client')->expect('OpenAI\Client')->toOnlyUse([

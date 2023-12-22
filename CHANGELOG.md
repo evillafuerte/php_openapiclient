@@ -4,6 +4,113 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v0.8.1 (2023-12-22)
+### Added
+-  Add support for Assistants and Threads endpoint ([#271](https://github.com/openai-php/client/pull/271))
+- Add stream support for Text To Speech ([#235](https://github.com/openai-php/client/pull/235))
+- Add test resources for Assistants and Threads  ([#279](https://github.com/openai-php/client/pull/279))
+
+### Changed
+- Remove thread messages delete endpoint ([#309](https://github.com/openai-php/client/pull/309))
+
+### Fixed
+- Handle x-request-id in meta information ([#283](https://github.com/openai-php/client/pull/283))
+- Handle meta information from azure headers ([#307](https://github.com/openai-php/client/pull/307))
+- Add missing default system_fingerprint to chat create response fixture ([#308](https://github.com/openai-php/client/pull/308))
+- Convert headers to lower case before creation meta information ([#306](https://github.com/openai-php/client/pull/306))
+
+### Docs
+- Remove threads list endpoint from README.md ([#275](https://github.com/openai-php/client/pull/275))
+- Clarify assistants files docs ([#278](https://github.com/openai-php/client/pull/278))
+- Fix image creation example ([#297](https://github.com/openai-php/client/pull/297))
+- Fix outdated links ([#299](https://github.com/openai-php/client/pull/299))
+- Add troubleshooting section and explain how to configure HTTP client timeouts
+
+## v0.8.0 (2023-11-23)
+### Added
+-  Add support for Assistants and Threads endpoint ([#271](https://github.com/openai-php/client/pull/271))
+
+## v0.8.0-beta.3 (2023-11-23)
+### Removed
+-  Remove `list()` from Threads resource
+
+## v0.8.0-beta.2 (2023-11-14)
+### Fixed
+-  instruction on ThreadRunResponse may be nullable
+
+## v0.7.10 (2023-11-14)
+### Added
+-  Add RetrieveJobResponseError and batch_size, learning_rate_multiplier parameters on RetrieveJobResponseHyperparameters for fine-tuning endpoint ([#255](https://github.com/openai-php/client/pull/255))
+
+## v0.7.9 (2023-11-14)
+### Added
+-  Add revised_prompt property to CreateResponseData on the image create endpoint ([#257](https://github.com/openai-php/client/pull/257))
+
+### Docs
+- Fix model in one of the examples
+
+## v0.8.0-beta.1 (2023-11-13)
+### Added
+-  Add support for Assistants and Threads endpoint ([#243](https://github.com/openai-php/client/pull/243))
+
+## v0.7.8 (2023-11-07)
+### Added
+-  Add support for GTP-4 vision on the chat completion endpoint ([#241](https://github.com/openai-php/client/pull/241))
+
+## v0.7.7 (2023-11-07)
+### Added
+-  Add support for tool calls on the chat completion endpoint ([#239](https://github.com/openai-php/client/pull/239))
+
+## v0.7.6 (2023-11-06)
+### Added
+-  Add support for the audio speech endpoint ([#237](https://github.com/openai-php/client/pull/237))
+
+## v0.7.5 (2023-11-06)
+### Changed
+- Update Models endpoint response object to the latest API changes ([#235](https://github.com/openai-php/client/pull/235))
+
+### Docs
+- Update FineTuning job id names ([#230](https://github.com/openai-php/client/pull/230))
+- Use Chat resource as the primary example
+
+## v0.7.4 (2023-10-21)
+### Fixed
+- nEpochs on RetrieveJobResponseHyperparameters may be string
+- processingMs ond MetaInformationOpenAI may be null ([#218](https://github.com/openai-php/client/pull/218))
+
+## v0.7.3 (2023-09-08)
+### Added
+- Add "has_more" to fine-tuning jobs and events list responses ([#206](https://github.com/openai-php/client/pull/206))
+
+### Changed
+- Add parameters to the fine-tuning jobs list request to filter the results ([#206](https://github.com/openai-php/client/pull/206))
+
+### Fixed
+- error_code may be int
+
+## v0.7.2 (2023-08-31)
+### Fixed
+- Missing openai-version header from Azure
+
+## v0.7.1 (2023-08-29)
+### Fixed
+- Typo in class name MetaInformationOpenAI
+
+## v0.7.0 (2023-08-29)
+### Added
+- Add support for the fine-tuning API ([#199](https://github.com/openai-php/client/pull/199))
+- Provide access to header / meta information for all responses ([#195](https://github.com/openai-php/client/pull/195))
+
+### Changed
+- Mark `FineTunes` resource as deprecated
+- Mark `Edits` resource as deprecated
+- Add missing moderation enums ([#178](https://github.com/openai-php/client/pull/178))
+
+### Fixed
+- Chat completion create response with function calling on Azure ([#184](https://github.com/openai-php/client/pull/184))
+- Breaking change on OpenAI API regarding "transient" field in Audio translations ([#168](https://github.com/openai-php/client/pull/168))
+- Docs: fix OpenAI URL
+
 ## v0.6.3 (2023-07-07)
 ### Fixed
 - Breaking change on OpenAI API regarding "transient" field in Audio ([#160](https://github.com/openai-php/client/pull/160))

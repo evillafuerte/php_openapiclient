@@ -34,7 +34,7 @@ beforeEach(function () {
 test('request object', function () {
     $payload = Payload::list('models');
 
-    $response = new Response(200, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
+    $response = new Response(200, ['Content-Type' => 'application/json; charset=utf-8', ...metaHeaders()], json_encode([
         'qdwq',
     ]));
 
@@ -57,7 +57,7 @@ test('request object', function () {
 test('request object response', function () {
     $payload = Payload::list('models');
 
-    $response = new Response(200, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
+    $response = new Response(200, ['Content-Type' => 'application/json; charset=utf-8', ...metaHeaders()], json_encode([
         [
             'text' => 'Hey!',
             'index' => 0,
@@ -73,7 +73,7 @@ test('request object response', function () {
 
     $response = $this->http->requestObject($payload);
 
-    expect($response)->toBe([
+    expect($response->data())->toBe([
         [
             'text' => 'Hey!',
             'index' => 0,
@@ -161,6 +161,32 @@ test('error code may be null', function () {
         });
 });
 
+test('error code may be integer', function () {
+    $payload = Payload::create('completions', ['model' => 'gpt-42']);
+
+    $response = new Response(404, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
+        'error' => [
+            'message' => 'The model `gpt-42` does not exist',
+            'type' => 'invalid_request_error',
+            'param' => null,
+            'code' => 123,
+        ],
+    ]));
+
+    $this->client
+        ->shouldReceive('sendRequest')
+        ->once()
+        ->andReturn($response);
+
+    expect(fn () => $this->http->requestObject($payload))
+        ->toThrow(function (ErrorException $e) {
+            expect($e->getMessage())->toBe('The model `gpt-42` does not exist')
+                ->and($e->getErrorMessage())->toBe('The model `gpt-42` does not exist')
+                ->and($e->getErrorCode())->toBe(123)
+                ->and($e->getErrorType())->toBe('invalid_request_error');
+        });
+});
+
 test('error type may be null', function () {
     $payload = Payload::list('models');
 
@@ -193,7 +219,8 @@ test('error message may be an array', function () {
     $response = new Response(404, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
         'error' => [
             'message' => [
-                'Invalid schema for function \'get_current_weather\': In context=(\'properties\', \'location\'), array schema missing items',
+                'Invalid schema for function \'get_current_weather\':',
+                'In context=(\'properties\', \'location\'), array schema missing items',
             ],
             'type' => 'invalid_request_error',
             'param' => null,
@@ -208,8 +235,8 @@ test('error message may be an array', function () {
 
     expect(fn () => $this->http->requestObject($payload))
         ->toThrow(function (ErrorException $e) {
-            expect($e->getMessage())->toBe('Invalid schema for function \'get_current_weather\': In context=(\'properties\', \'location\'), array schema missing items')
-                ->and($e->getErrorMessage())->toBe('Invalid schema for function \'get_current_weather\': In context=(\'properties\', \'location\'), array schema missing items')
+            expect($e->getMessage())->toBe('Invalid schema for function \'get_current_weather\':'.PHP_EOL.'In context=(\'properties\', \'location\'), array schema missing items')
+                ->and($e->getErrorMessage())->toBe('Invalid schema for function \'get_current_weather\':'.PHP_EOL.'In context=(\'properties\', \'location\'), array schema missing items')
                 ->and($e->getErrorCode())->toBeNull()
                 ->and($e->getErrorType())->toBe('invalid_request_error');
         });
@@ -237,6 +264,32 @@ test('error message may be empty', function () {
             expect($e->getMessage())->toBe('invalid_api_key')
                 ->and($e->getErrorMessage())->toBe('invalid_api_key')
                 ->and($e->getErrorCode())->toBe('invalid_api_key')
+                ->and($e->getErrorType())->toBe('invalid_request_error');
+        });
+});
+
+test('error message may be empty and code is an integer', function () {
+    $payload = Payload::create('completions', ['model' => 'gpt-4']);
+
+    $response = new Response(404, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
+        'error' => [
+            'message' => '',
+            'type' => 'invalid_request_error',
+            'param' => null,
+            'code' => 123,
+        ],
+    ]));
+
+    $this->client
+        ->shouldReceive('sendRequest')
+        ->once()
+        ->andReturn($response);
+
+    expect(fn () => $this->http->requestObject($payload))
+        ->toThrow(function (ErrorException $e) {
+            expect($e->getMessage())->toBe('123')
+                ->and($e->getErrorMessage())->toBe('123')
+                ->and($e->getErrorCode())->toBe(123)
                 ->and($e->getErrorType())->toBe('invalid_request_error');
         });
 });
@@ -286,6 +339,35 @@ test('request object client errors', function () {
     });
 });
 
+test('request object client error in response', function () {
+    $payload = Payload::list('models');
+
+    $baseUri = BaseUri::from('api.openai.com');
+    $headers = Headers::withAuthorization(ApiKey::from('foo'));
+    $queryParams = QueryParams::create();
+
+    $this->client
+        ->shouldReceive('sendRequest')
+        ->once()
+        ->andThrow(new \GuzzleHttp\Exception\ClientException(
+            message: 'Could not resolve host.',
+            request: $payload->toRequest($baseUri, $headers, $queryParams),
+            response: new Response(401, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
+                'error' => [
+                    'message' => 'Incorrect API key provided: foo. You can find your API key at https://platform.openai.com.',
+                    'type' => 'invalid_request_error',
+                    'param' => null,
+                    'code' => 'invalid_api_key',
+                ],
+            ]))
+        ));
+
+    expect(fn () => $this->http->requestObject($payload))->toThrow(function (ErrorException $e) {
+        expect($e->getMessage())
+            ->toBe('Incorrect API key provided: foo. You can find your API key at https://platform.openai.com.');
+    });
+});
+
 test('request object serialization errors', function () {
     $payload = Payload::list('models');
 
@@ -297,12 +379,12 @@ test('request object serialization errors', function () {
         ->andReturn($response);
 
     $this->http->requestObject($payload);
-})->throws(UnserializableResponse::class, 'Syntax error');
+})->throws(UnserializableResponse::class, 'Syntax error', 0);
 
 test('request plain text', function () {
     $payload = Payload::upload('audio/transcriptions', []);
 
-    $response = new Response(200, ['Content-Type' => 'text/plain; charset=utf-8'], 'Hello, how are you?');
+    $response = new Response(200, ['Content-Type' => 'text/plain; charset=utf-8', ...metaHeaders()], 'Hello, how are you?');
 
     $this->client
         ->shouldReceive('sendRequest')
@@ -311,7 +393,7 @@ test('request plain text', function () {
 
     $response = $this->http->requestObject($payload);
 
-    expect($response)->toBe('Hello, how are you?');
+    expect($response->data())->toBe('Hello, how are you?');
 });
 
 test('request content', function () {

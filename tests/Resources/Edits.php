@@ -3,18 +3,19 @@
 use OpenAI\Responses\Edits\CreateResponse;
 use OpenAI\Responses\Edits\CreateResponseChoice;
 use OpenAI\Responses\Edits\CreateResponseUsage;
+use OpenAI\Responses\Meta\MetaInformation;
 
 test('create', function () {
     $client = mockClient('POST', 'edits', [
         'model' => 'text-davinci-edit-001',
         'input' => 'What day of the wek is it?',
         'instruction' => 'Fix the spelling mistakes',
-    ], edit());
+    ], \OpenAI\ValueObjects\Transporter\Response::from(edit(), metaHeaders()));
 
     $result = $client->edits()->create([
-        'object' => 'edit',
-        'created' => 1664135921,
-        'choices' => [],
+        'model' => 'text-davinci-edit-001',
+        'input' => 'What day of the wek is it?',
+        'instruction' => 'Fix the spelling mistakes',
     ]);
 
     expect($result)
@@ -33,4 +34,7 @@ test('create', function () {
         ->promptTokens->toBe(25)
         ->completionTokens->toBe(28)
         ->totalTokens->toBe(53);
+
+    expect($result->meta())
+        ->toBeInstanceOf(MetaInformation::class);
 });

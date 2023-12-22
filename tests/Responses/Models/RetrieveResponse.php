@@ -1,10 +1,10 @@
 <?php
 
+use OpenAI\Responses\Meta\MetaInformation;
 use OpenAI\Responses\Models\RetrieveResponse;
-use OpenAI\Responses\Models\RetrieveResponsePermission;
 
 test('from', function () {
-    $result = RetrieveResponse::from(model());
+    $result = RetrieveResponse::from(model(), meta());
 
     expect($result)
         ->toBeInstanceOf(RetrieveResponse::class)
@@ -12,20 +12,17 @@ test('from', function () {
         ->object->toBe('model')
         ->created->toBe(1642018370)
         ->ownedBy->toBe('openai')
-        ->permission->toBeArray()->toHaveCount(1)
-        ->permission->each->toBeInstanceOf(RetrieveResponsePermission::class)
-        ->root->toBe('text-babbage:001')
-        ->parent->toBe(null);
+        ->meta()->toBeInstanceOf(MetaInformation::class);
 });
 
 test('as array accessible', function () {
-    $result = RetrieveResponse::from(model());
+    $result = RetrieveResponse::from(model(), meta());
 
     expect($result['id'])->toBe('text-babbage:001');
 });
 
 test('to array', function () {
-    $result = RetrieveResponse::from(model());
+    $result = RetrieveResponse::from(model(), meta());
 
     expect($result->toArray())
         ->toBe(model());
@@ -36,22 +33,16 @@ test('fake', function () {
 
     expect($response)
         ->id->toBe('text-babbage:001')
-        ->and($response->permission[0])
-        ->allowCreateEngine->toBeFalse();
+        ->ownedBy->toBe('openai');
 });
 
 test('fake with override', function () {
     $response = RetrieveResponse::fake([
         'id' => 'text-1234',
-        'permission' => [
-            [
-                'allow_create_engine' => true,
-            ],
-        ],
+        'owned_by' => 'xyz-dev',
     ]);
 
     expect($response)
         ->id->toBe('text-1234')
-        ->and($response->permission[0])
-        ->allowCreateEngine->toBeTrue();
+        ->ownedBy->toBe('xyz-dev');
 });

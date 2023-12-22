@@ -1,16 +1,20 @@
 <?php
 
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Stream;
+use OpenAI\Responses\Audio\SpeechStreamResponse;
 use OpenAI\Responses\Audio\TranscriptionResponse;
 use OpenAI\Responses\Audio\TranscriptionResponseSegment;
 use OpenAI\Responses\Audio\TranslationResponse;
 use OpenAI\Responses\Audio\TranslationResponseSegment;
+use OpenAI\Responses\Meta\MetaInformation;
 
 test('transcribe to text', function () {
     $client = mockClient('POST', 'audio/transcriptions', [
         'file' => audioFileResource(),
         'model' => 'whisper-1',
         'response_format' => 'text',
-    ], audioTranscriptionText());
+    ], \OpenAI\ValueObjects\Transporter\Response::from(audioTranscriptionText(), metaHeaders()), validateParams: false);
 
     $result = $client->audio()->transcribe([
         'file' => audioFileResource(),
@@ -25,6 +29,9 @@ test('transcribe to text', function () {
         ->duration->toBeNull()
         ->segments->toBeEmpty()
         ->text->toBe('Hello, how are you?');
+
+    expect($result->meta())
+        ->toBeInstanceOf(MetaInformation::class);
 });
 
 test('transcribe to json', function () {
@@ -32,7 +39,7 @@ test('transcribe to json', function () {
         'file' => audioFileResource(),
         'model' => 'whisper-1',
         'response_format' => 'json',
-    ], audioTranscriptionJson());
+    ], \OpenAI\ValueObjects\Transporter\Response::from(audioTranscriptionJson(), metaHeaders()), validateParams: false);
 
     $result = $client->audio()->transcribe([
         'file' => audioFileResource(),
@@ -47,6 +54,9 @@ test('transcribe to json', function () {
         ->duration->toBeNull()
         ->segments->toBeEmpty()
         ->text->toBe('Hello, how are you?');
+
+    expect($result->meta())
+        ->toBeInstanceOf(MetaInformation::class);
 });
 
 test('transcribe to verbose json', function () {
@@ -54,7 +64,7 @@ test('transcribe to verbose json', function () {
         'file' => audioFileResource(),
         'model' => 'whisper-1',
         'response_format' => 'verbose_json',
-    ], audioTranscriptionVerboseJson());
+    ], \OpenAI\ValueObjects\Transporter\Response::from(audioTranscriptionVerboseJson(), metaHeaders()), validateParams: false);
 
     $result = $client->audio()->transcribe([
         'file' => audioFileResource(),
@@ -87,6 +97,9 @@ test('transcribe to verbose json', function () {
         ->compressionRatio->toBe(0.7037037037037037)
         ->noSpeechProb->toBe(0.1076972484588623)
         ->transient->toBeFalse();
+
+    expect($result->meta())
+        ->toBeInstanceOf(MetaInformation::class);
 });
 
 test('translate to text', function () {
@@ -94,7 +107,7 @@ test('translate to text', function () {
         'file' => audioFileResource(),
         'model' => 'whisper-1',
         'response_format' => 'text',
-    ], audioTranslationText());
+    ], \OpenAI\ValueObjects\Transporter\Response::from(audioTranslationText(), metaHeaders()), validateParams: false);
 
     $result = $client->audio()->translate([
         'file' => audioFileResource(),
@@ -109,6 +122,9 @@ test('translate to text', function () {
         ->duration->toBeNull()
         ->segments->toBeEmpty()
         ->text->toBe('Hello, how are you?');
+
+    expect($result->meta())
+        ->toBeInstanceOf(MetaInformation::class);
 });
 
 test('translate to json', function () {
@@ -116,7 +132,7 @@ test('translate to json', function () {
         'file' => audioFileResource(),
         'model' => 'whisper-1',
         'response_format' => 'json',
-    ], audioTranslationJson());
+    ], \OpenAI\ValueObjects\Transporter\Response::from(audioTranslationJson(), metaHeaders()), validateParams: false);
 
     $result = $client->audio()->translate([
         'file' => audioFileResource(),
@@ -131,6 +147,9 @@ test('translate to json', function () {
         ->duration->toBeNull()
         ->segments->toBeEmpty()
         ->text->toBe('Hello, how are you?');
+
+    expect($result->meta())
+        ->toBeInstanceOf(MetaInformation::class);
 });
 
 test('translate to verbose json', function () {
@@ -138,7 +157,7 @@ test('translate to verbose json', function () {
         'file' => audioFileResource(),
         'model' => 'whisper-1',
         'response_format' => 'verbose_json',
-    ], audioTranslationVerboseJson());
+    ], \OpenAI\ValueObjects\Transporter\Response::from(audioTranslationVerboseJson(), metaHeaders()), validateParams: false);
 
     $result = $client->audio()->translate([
         'file' => audioFileResource(),
@@ -171,4 +190,51 @@ test('translate to verbose json', function () {
         ->compressionRatio->toBe(0.7037037037037037)
         ->noSpeechProb->toBe(0.1076972484588623)
         ->transient->toBeFalse();
+
+    expect($result->meta())
+        ->toBeInstanceOf(MetaInformation::class);
+});
+
+test('text to speech', function () {
+    $client = mockContentClient('POST', 'audio/speech', [
+        'model' => 'tts-1',
+        'input' => 'Hello, how are you?',
+        'voice' => 'alloy',
+    ], audioFileContent());
+
+    $result = $client->audio()->speech([
+        'model' => 'tts-1',
+        'input' => 'Hello, how are you?',
+        'voice' => 'alloy',
+    ]);
+
+    expect($result)
+        ->toBeString()
+        ->toBe(audioFileContent());
+});
+
+test('text to speech streamed', function () {
+    $response = new Response(
+        body: new Stream(speechStream()),
+        headers: metaHeaders(),
+    );
+
+    $client = mockStreamClient('POST', 'audio/speech', [
+        'model' => 'tts-1',
+        'input' => 'Hello, how are you?',
+        'voice' => 'alloy',
+    ], $response, 'requestContent');
+
+    $result = $client->audio()->speechStreamed([
+        'model' => 'tts-1',
+        'input' => 'Hello, how are you?',
+        'voice' => 'alloy',
+    ]);
+
+    expect($result)
+        ->toBeInstanceOf(SpeechStreamResponse::class)
+        ->toBeInstanceOf(IteratorAggregate::class);
+
+    expect($result->getIterator())
+        ->toBeInstanceOf(Iterator::class);
 });
